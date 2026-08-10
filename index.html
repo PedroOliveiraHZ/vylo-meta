@@ -76,6 +76,8 @@
   .meta-cell small{display:block; color:var(--muted); font-size:.72em; margin-top:2px;}
 
   .footer-note{text-align:center; color:var(--muted); font-size:.8em; margin-top:26px;}
+  .status{text-align:center; color:var(--muted); font-size:.75em; margin-top:14px;}
+  .status.err{color:var(--bad);}
 </style>
 </head>
 <body>
@@ -110,19 +112,37 @@
     <tbody id="ranking-body"></tbody>
   </table>
 
+  <div class="status" id="status">Carregando dados da planilha...</div>
+
 </div>
 
 <script>
-  // ======= ATUALIZE OS NÚMEROS AQUI TODO DIA =======
-  const players = [
-    { name: "Lia Mara",          decolas: 0, sellers: 0, indicacoes: 0 },
-    { name: "Maria Clara",       decolas: 0, sellers: 0, indicacoes: 0 },
-    { name: "Guilherme Camurça", decolas: 0, sellers: 0, indicacoes: 0 },
-    { name: "Eduardo Kevin",     decolas: 0, sellers: 0, indicacoes: 0 },
-  ];
+  // Fonte dos dados: aba "Página1" da planilha Vylo-meta (Google Sheets)
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/1FnNKvyZhNu9tg40fdnePLixxVbvVvvT34yzAFYbhER0/gviz/tq?tqx=out:csv&gid=0";
   const METAS = { decolas: 15, sellers: 5, indicacoes: 3 };
   const CAMPAIGN_END = new Date("2026-08-31T23:59:59");
-  // ===================================================
+  const REFRESH_MS = 30000; // recarrega os dados da planilha a cada 30s
+
+  function parseCSV(text){
+    const rows = [];
+    const lines = text.trim().split(/\r?\n/);
+    for (const line of lines){
+      const cells = [];
+      let cur = '', inQuotes = false;
+      for (let i = 0; i < line.length; i++){
+        const ch = line[i];
+        if (ch === '"'){
+          if (inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
+          else inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes){
+          cells.push(cur); cur = '';
+        } else cur += ch;
+      }
+      cells.push(cur);
+      rows.push(cells);
+    }
+    return rows;
+  }
 
   function progresso(p){
     const a = Math.min(p.decolas / METAS.decolas, 1);
@@ -134,44 +154,74 @@
     return p.decolas >= METAS.decolas && p.sellers >= METAS.sellers && p.indicacoes >= METAS.indicacoes;
   }
 
-  const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
-  const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
+  function render(players){
+    const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
+    const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
 
-  // Podium (top 3)
-  const podiumEl = document.getElementById('podium');
-  const labels = ["1º LUGAR","2º LUGAR","3º LUGAR"];
-  sorted.slice(0,3).forEach((p,i) => {
-    const div = document.createElement('div');
-    div.className = 'podium-card' + (i===0 ? ' first' : '');
-    div.innerHTML = `
-      <div class="rank-tag">${labels[i]}</div>
-      <div class="podium-name">${p.name}</div>
-      <div class="podium-pts">${p.prog}% das metas concluído</div>
-      <div class="podium-bar-bg"><div class="podium-bar-fill" style="width:${p.prog}%"></div></div>
-    `;
-    podiumEl.appendChild(div);
-  });
+    // Podium
+    const podiumEl = document.getElementById('podium');
+    podiumEl.innerHTML = '';
+    const labels = ["1º LUGAR","2º LUGAR","3º LUGAR"];
+    sorted.slice(0,3).forEach((p,i) => {
+      const div = document.createElement('div');
+      div.className = 'podium-card' + (i===0 ? ' first' : '');
+      div.innerHTML = `
+        <div class="rank-tag">${labels[i]}</div>
+        <div class="podium-name">${p.name}</div>
+        <div class="podium-pts">${p.prog}% das metas concluído</div>
+        <div class="podium-bar-bg"><div class="podium-bar-fill" style="width:${p.prog}%"></div></div>
+      `;
+      podiumEl.appendChild(div);
+    });
 
-  // Table
-  const body = document.getElementById('ranking-body');
-  sorted.forEach((p, idx) => {
-    const pos = idx + 1;
-    const ok = elegivel(p);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><span class="pos ${pos===1?'gold':''}">${pos}</span></td>
-      <td>${p.name}</td>
-      <td class="meta-cell">${p.decolas}<small>/${METAS.decolas}</small></td>
-      <td class="meta-cell">${p.sellers}<small>/${METAS.sellers}</small></td>
-      <td class="meta-cell">${p.indicacoes}<small>/${METAS.indicacoes}</small></td>
-      <td>
-        <span class="progresso">${p.prog}%</span>
-        <div class="bar-bg"><div class="bar-fill" style="width:${p.prog}%"></div></div>
-      </td>
-      <td><span class="badge ${ok ? 'sim' : 'nao'}">${ok ? 'SIM' : 'NÃO'}</span></td>
-    `;
-    body.appendChild(tr);
-  });
+    // Table
+    const body = document.getElementById('ranking-body');
+    body.innerHTML = '';
+    sorted.forEach((p, idx) => {
+      const pos = idx + 1;
+      const ok = elegivel(p);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="pos ${pos===1?'gold':''}">${pos}</span></td>
+        <td>${p.name}</td>
+        <td class="meta-cell">${p.decolas}<small>/${METAS.decolas}</small></td>
+        <td class="meta-cell">${p.sellers}<small>/${METAS.sellers}</small></td>
+        <td class="meta-cell">${p.indicacoes}<small>/${METAS.indicacoes}</small></td>
+        <td>
+          <span class="progresso">${p.prog}%</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${p.prog}%"></div></div>
+        </td>
+        <td><span class="badge ${ok ? 'sim' : 'nao'}">${ok ? 'SIM' : 'NÃO'}</span></td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  async function loadData(){
+    const statusEl = document.getElementById('status');
+    try {
+      const res = await fetch(CSV_URL + '&_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text).filter(r => r.length > 1 && r[0] !== 'Nome');
+      const players = rows.map(r => ({
+        name: r[0],
+        decolas: Number(r[1]) || 0,
+        sellers: Number(r[2]) || 0,
+        indicacoes: Number(r[3]) || 0,
+      }));
+      if (players.length === 0) throw new Error('planilha vazia');
+      render(players);
+      statusEl.className = 'status';
+      statusEl.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR');
+    } catch (err) {
+      statusEl.className = 'status err';
+      statusEl.textContent = 'Não foi possível carregar os dados da planilha (' + err.message + ')';
+    }
+  }
+
+  loadData();
+  setInterval(loadData, REFRESH_MS);
 
   // Countdown
   function tick(){
