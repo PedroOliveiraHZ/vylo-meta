@@ -52,7 +52,33 @@
   .panel-note{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     text-align:center; padding:20px; color:#666; font-size:.85em; background:#fff;
+    line-height:1.6;
   }
+  .panel-note-inner{max-width:340px;}
+  .panel-note code{background:#f0f0f0; padding:1px 5px; border-radius:4px; font-size:.9em;}
+  .panel-note .btn{
+    display:inline-block; margin-top:14px; padding:8px 18px; border-radius:8px;
+    background:var(--purple); color:#fff; text-decoration:none; font-weight:700; font-size:.9em;
+  }
+
+  .cal-list{
+    position:absolute; inset:0; overflow-y:auto; padding:12px; background:transparent;
+  }
+  .cal-item{
+    background:rgba(255,255,255,.05); border:1px solid var(--glass-border); border-radius:10px;
+    padding:10px 12px; margin-bottom:8px;
+  }
+  .cal-row1{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .cal-date{font-size:.75em; color:var(--teal-soft); font-weight:700; letter-spacing:.5px;}
+  .cal-status{padding:1px 8px; border-radius:12px; font-size:.68em; font-weight:700; letter-spacing:.3px;}
+  .cal-status.concluido{background:rgba(62,207,126,.18); color:#3ecf7e;}
+  .cal-status.andamento{background:rgba(84,150,255,.18); color:#7fb0ff;}
+  .cal-status.pendente{background:rgba(255,255,255,.12); color:var(--muted);}
+  .cal-headline{font-size:.88em; font-weight:600; color:#fff; margin-bottom:6px; line-height:1.35;}
+  .cal-tags{display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px;}
+  .cal-tag{background:rgba(255,255,255,.1); color:var(--muted); font-size:.68em; padding:1px 7px; border-radius:8px;}
+  .cal-resp{font-size:.72em; color:var(--muted);}
+  .cal-status-msg{padding:12px; text-align:center; color:var(--muted); font-size:.8em;}
 
   @media (max-width: 1000px){
     .panels{
@@ -88,10 +114,8 @@
         <a href="https://app.notion.com/p/Calend-rios-Editoriais-3aecea585a8e8084bb25e0bdb1d2e72b?source=copy_link" target="_blank">abrir em nova aba ↗</a>
       </div>
       <div class="panel-body">
-        <div class="panel-note">
-          📌 O Notion bloqueia esse link (precisa ser o link público de "Compartilhar na Web", não o link do app).<br><br>
-          Assim que tiver o link público, é só trocar o <code>src</code> do iframe deste painel no <code>index.html</code>.<br><br>
-          Por enquanto, use "abrir em nova aba" acima ↑
+        <div class="cal-list" id="cal-list">
+          <div class="cal-status-msg" id="cal-status">Carregando calendário...</div>
         </div>
       </div>
     </div>
@@ -108,5 +132,59 @@
 
   </div>
 
+<script>
+  const CAL_STATUS_CLASS = {
+    'Concluído': 'concluido',
+    'Em andamento': 'andamento',
+  };
+
+  function fmtDate(iso){
+    if (!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}`;
+  }
+
+  function renderCalendar(rows){
+    const list = document.getElementById('cal-list');
+    if (!rows.length){
+      list.innerHTML = '<div class="cal-status-msg">Nenhum item encontrado no calendário.</div>';
+      return;
+    }
+    list.innerHTML = rows.map(r => {
+      const status = r['Status'] || '';
+      const statusClass = CAL_STATUS_CLASS[status] || 'pendente';
+      const headline = r['Headline & Conteúdo'] || r['Headline'] || '(sem título)';
+      const tags = [r['Formato'], r['Canal']].filter(Boolean).join(', ');
+      const resp = r['Responsável'] || '';
+      return `
+        <div class="cal-item">
+          <div class="cal-row1">
+            <span class="cal-date">${fmtDate(r['Data'])}</span>
+            <span class="cal-status ${statusClass}">${status || '—'}</span>
+          </div>
+          <div class="cal-headline">${headline}</div>
+          ${tags ? `<div class="cal-tags">${tags.split(', ').map(t => `<span class="cal-tag">${t}</span>`).join('')}</div>` : ''}
+          ${resp ? `<div class="cal-resp">👤 ${resp}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function loadCalendar(){
+    const statusMsg = document.getElementById('cal-status');
+    try {
+      const res = await fetch('/api/calendario', { cache: 'no-store' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      renderCalendar(data.rows || []);
+    } catch (err) {
+      document.getElementById('cal-list').innerHTML =
+        `<div class="cal-status-msg">Não foi possível carregar o calendário (${err.message}).<br><br>Confira se NOTION_TOKEN e NOTION_DATABASE_ID estão configurados na Vercel.</div>`;
+    }
+  }
+
+  loadCalendar();
+  setInterval(loadCalendar, 30000);
+</script>
 </body>
 </html>
