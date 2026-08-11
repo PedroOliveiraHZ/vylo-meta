@@ -13,7 +13,7 @@
   html,body{height:100%;}
   body{
     margin:0; padding:0;
-    background: linear-gradient(135deg, #4b0e93 0%, #2d5aa8 45%, #12a389 100%);
+    background:#11121a;
     font-family: 'Segoe UI', Arial, sans-serif; color:var(--text);
     display:flex; flex-direction:column; min-height:100vh;
   }
@@ -71,7 +71,9 @@
     padding:10px 12px; margin-bottom:8px;
   }
   .cal-row1{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .cal-left{display:flex; align-items:center; gap:6px;}
   .cal-date{font-size:.75em; color:var(--teal-soft); font-weight:700; letter-spacing:.5px;}
+  .cal-source{font-size:.65em; color:#d4b3ff; background:rgba(91,12,165,.35); border:1px solid rgba(91,12,165,.6); padding:1px 7px; border-radius:10px; font-weight:700;}
   .cal-status{padding:1px 8px; border-radius:12px; font-size:.68em; font-weight:700; letter-spacing:.3px;}
   .cal-status.concluido{background:rgba(62,207,126,.18); color:#3ecf7e;}
   .cal-status.andamento{background:rgba(84,150,255,.18); color:#7fb0ff;}
@@ -155,13 +157,17 @@
     list.innerHTML = rows.map(r => {
       const status = r['Status'] || '';
       const statusClass = CAL_STATUS_CLASS[status] || 'pendente';
-      const headline = r['Headline & Conteúdo'] || r['Headline'] || '(sem título)';
+      const headline = r['Headline & Conteúdo'] || r['Headline'] || r['_title'] || '(sem título)';
       const tags = [r['Formato'], r['Canal']].filter(Boolean).join(', ');
       const resp = r['Responsável'] || '';
+      const source = r['_source'] || '';
       return `
         <div class="cal-item">
           <div class="cal-row1">
-            <span class="cal-date">${fmtDate(r['Data'])}</span>
+            <div class="cal-left">
+              <span class="cal-date">${fmtDate(r['Data'])}</span>
+              ${source ? `<span class="cal-source">${source}</span>` : ''}
+            </div>
             <span class="cal-status ${statusClass}">${status || '—'}</span>
           </div>
           <div class="cal-headline">${headline}</div>

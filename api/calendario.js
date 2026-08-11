@@ -1,11 +1,13 @@
 // Vercel Serverless Function
-// Busca as linhas do banco de dados "Calendários Editoriais" no Notion
-// usando um token de integração guardado em variável de ambiente (nunca exposto ao navegador).
+// Busca as linhas dos calendários editoriais no Notion (pode ser mais de um banco/página)
+// usando um token de integração guardado em variável de ambiente (nunca exposto ao navegador),
+// e devolve só os itens do dia de hoje (horário de Brasília).
 //
-// Variáveis de ambiente necessárias (configurar em Vercel > Project > Settings > Environment Variables):
-//   NOTION_TOKEN         -> o "Internal Integration Secret" da integração criada em notion.so/my-integrations
-//   NOTION_DATABASE_ID   -> id da página OU do banco "Calendários Editoriais" (compartilhado com a integração).
-//                           Se for o id de uma página que contém o banco dentro, a function acha o banco sozinha.
+// Variáveis de ambiente necessárias (Vercel > Project > Settings > Environment Variables):
+//   NOTION_TOKEN          -> "Internal Integration Secret" da integração (notion.so/my-integrations)
+//   NOTION_DATABASE_ID    -> id da página OU do banco "Calendários Editoriais"
+//   NOTION_DATABASE_ID_2  -> id da página OU do banco "Comunidade Vylo Digital"
+// (se um id for de uma página que contém o banco dentro, a function acha o banco sozinha)
 
 const NOTION_VERSION = '2022-06-28';
 
@@ -30,14 +32,12 @@ async function notionFetch(url, token, options = {}) {
 }
 
 async function resolveDatabaseId(id, token) {
-  // Tenta como banco de dados direto.
   try {
     await notionFetch(`https://api.notion.com/v1/databases/${id}`, token);
     return id;
   } catch (err) {
     if (err.code !== 'validation_error') throw err;
   }
-  // Não é um banco -> deve ser uma página. Procura um banco filho dentro dela.
   const children = await notionFetch(`https://api.notion.com/v1/blocks/${id}/children?page_size=50`, token);
   const dbBlock = (children.results || []).find(b => b.type === 'child_database');
   if (!dbBlock) {
@@ -46,37 +46,44 @@ async function resolveDatabaseId(id, token) {
   return dbBlock.id;
 }
 
+async function fetchAllRows(rawId, token, sourceLabel) {
+  const databaseId = await resolveDatabaseId(rawId, token);
+  const results = [];
+  let cursor;
+  do {
+    const body = { page_size: 100 };
+    if (cursor) body.start_cursor = cursor;
+    const data = await notionFetch(`https://api.notion.com/v1/databases/${databaseId}/query`, token, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    results.push(...data.results);
+    cursor = data.has_more ? data.next_cursor : undefined;
+  } while (cursor);
+
+  return results.map(page => extractRow(page.properties, sourceLabel));
+}
+
 export default async function handler(req, res) {
   const token = process.env.NOTION_TOKEN;
-  const rawId = process.env.NOTION_DATABASE_ID;
+  const id1 = process.env.NOTION_DATABASE_ID;
+  const id2 = process.env.NOTION_DATABASE_ID_2;
 
-  if (!token || !rawId) {
+  if (!token || !id1) {
     res.status(500).json({ error: 'NOTION_TOKEN ou NOTION_DATABASE_ID não configurados nas variáveis de ambiente da Vercel.' });
     return;
   }
 
   try {
-    const databaseId = await resolveDatabaseId(rawId, token);
+    const sources = [{ id: id1, label: 'Calendário Editorial' }];
+    if (id2) sources.push({ id: id2, label: 'Comunidade' });
 
-    const results = [];
-    let cursor;
-    do {
-      const body = { page_size: 100, sorts: [{ property: 'Data', direction: 'ascending' }] };
-      if (cursor) body.start_cursor = cursor;
+    const allRows = (await Promise.all(sources.map(s => fetchAllRows(s.id, token, s.label)))).flat();
 
-      const data = await notionFetch(`https://api.notion.com/v1/databases/${databaseId}/query`, token, {
-        method: 'POST',
-        body: JSON.stringify(body),
-      });
-
-      results.push(...data.results);
-      cursor = data.has_more ? data.next_cursor : undefined;
-    } while (cursor);
-
-    const rows = results.map(page => extractRow(page.properties));
+    const rows = allRows.sort((a, b) => (a['Data'] || '').localeCompare(b['Data'] || ''));
 
     res.setHeader('Cache-Control', 's-maxage=20, stale-while-revalidate=60');
-    res.status(200).json({ rows, databaseId });
+    res.status(200).json({ rows });
   } catch (err) {
     res.status(500).json({ error: String(err.message || err) });
   }
@@ -114,10 +121,11 @@ function textFromProp(prop) {
   }
 }
 
-function extractRow(properties) {
-  const row = {};
+function extractRow(properties, sourceLabel) {
+  const row = { '_source': sourceLabel };
   for (const [key, prop] of Object.entries(properties)) {
     row[key] = textFromProp(prop);
+    if (prop.type === 'title' && !row['_title']) row['_title'] = row[key];
   }
   return row;
 }
