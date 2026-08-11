@@ -68,9 +68,6 @@
 <body>
 <div class="wrap">
 
-  <div class="section-title">QUEM ESTÁ NA FRENTE</div>
-  <div class="podium" id="podium"></div>
-
   <table>
     <thead>
       <tr>
@@ -130,21 +127,6 @@
   function render(players){
     const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
     const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
-
-    const podiumEl = document.getElementById('podium');
-    podiumEl.innerHTML = '';
-    const labels = ["1º LUGAR","2º LUGAR","3º LUGAR"];
-    sorted.slice(0,3).forEach((p,i) => {
-      const div = document.createElement('div');
-      div.className = 'podium-card' + (i===0 ? ' first' : '');
-      div.innerHTML = `
-        <div class="rank-tag">${labels[i]}</div>
-        <div class="podium-name">${p.name}</div>
-        <div class="podium-pts">${p.prog}% das metas concluído</div>
-        <div class="podium-bar-bg"><div class="podium-bar-fill" style="width:${p.prog}%"></div></div>
-      `;
-      podiumEl.appendChild(div);
-    });
 
     const body = document.getElementById('ranking-body');
     body.innerHTML = '';
