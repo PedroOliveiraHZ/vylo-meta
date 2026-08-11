@@ -74,6 +74,7 @@
   .cal-left{display:flex; align-items:center; gap:6px;}
   .cal-date{font-size:.75em; color:var(--teal-soft); font-weight:700; letter-spacing:.5px;}
   .cal-source{font-size:.65em; color:var(--purple); background:rgba(91,12,165,.08); border:1px solid rgba(91,12,165,.25); padding:1px 7px; border-radius:10px; font-weight:700;}
+  .cal-source.comunidade{color:#a67c00; background:rgba(255,193,7,.15); border:1px solid rgba(255,193,7,.5);}
   .cal-status{padding:1px 8px; border-radius:12px; font-size:.68em; font-weight:700; letter-spacing:.3px;}
   .cal-status.concluido{background:rgba(30,166,94,.12); color:#1ea65e;}
   .cal-status.andamento{background:rgba(45,90,168,.12); color:#2d5aa8;}
@@ -161,12 +162,13 @@
       const tags = [r['Formato'], r['Canal']].filter(Boolean).join(', ');
       const resp = r['Responsável'] || '';
       const source = r['_source'] || '';
+      const sourceClass = source === 'Comunidade' ? 'comunidade' : '';
       return `
         <div class="cal-item">
           <div class="cal-row1">
             <div class="cal-left">
               <span class="cal-date">${fmtDate(r['Data'])}</span>
-              ${source ? `<span class="cal-source">${source}</span>` : ''}
+              ${source ? `<span class="cal-source ${sourceClass}">${source}</span>` : ''}
             </div>
             <span class="cal-status ${statusClass}">${status || '—'}</span>
           </div>

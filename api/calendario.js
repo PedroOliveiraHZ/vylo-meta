@@ -1,13 +1,4 @@
-// Vercel Serverless Function
-// Busca as linhas dos calendários editoriais no Notion (pode ser mais de um banco/página)
-// usando um token de integração guardado em variável de ambiente (nunca exposto ao navegador),
-// e devolve só os itens do dia de hoje (horário de Brasília).
-//
-// Variáveis de ambiente necessárias (Vercel > Project > Settings > Environment Variables):
-//   NOTION_TOKEN          -> "Internal Integration Secret" da integração (notion.so/my-integrations)
-//   NOTION_DATABASE_ID    -> id da página OU do banco "Calendários Editoriais"
-//   NOTION_DATABASE_ID_2  -> id da página OU do banco "Comunidade Vylo Digital"
-// (se um id for de uma página que contém o banco dentro, a function acha o banco sozinha)
+
 
 const NOTION_VERSION = '2022-06-28';
 
@@ -70,7 +61,7 @@ export default async function handler(req, res) {
   const id2 = process.env.NOTION_DATABASE_ID_2;
 
   if (!token || !id1) {
-    res.status(500).json({ error: 'NOTION_TOKEN ou NOTION_DATABASE_ID não configurados nas variáveis de ambiente da Vercel.' });
+    res.status(500).json({ error: 'error.' });
     return;
   }
 
