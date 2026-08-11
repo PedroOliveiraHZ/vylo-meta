@@ -2,218 +2,100 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Liga de Vendas 2026 - Sinergia Comercial</title>
+<title>Central Vylo Digital</title>
 <style>
   :root{
     --purple:#5b0ca5; --blue:#2d5aa8; --teal:#14c9a8; --teal-soft:#2ee6c5;
     --text:#ffffff; --muted:#cfe3de;
-    --ok:#3ecf7e; --bad:#ff6b6b;
-    --glass:rgba(255,255,255,.08); --glass-border:rgba(255,255,255,.22);
+    --glass:rgba(255,255,255,.08); --glass-border:rgba(255,255,255,.18);
   }
   *{box-sizing:border-box;}
+  html,body{height:100%;}
   body{
-    margin:0; padding:40px 20px; min-height:100vh;
+    margin:0; padding:0;
     background: linear-gradient(135deg, #4b0e93 0%, #2d5aa8 45%, #12a389 100%);
-    background-attachment: fixed;
     font-family: 'Segoe UI', Arial, sans-serif; color:var(--text);
+    display:flex; flex-direction:column; min-height:100vh;
   }
-  .wrap{max-width:1000px; margin:0 auto;}
-  .logo{display:block; margin:0 auto 18px; height:64px;}
-  h1{
-    text-align:center; font-size:2.6em; letter-spacing:4px; margin:0;
-    color:#ffffff; text-shadow:0 0 20px rgba(0,0,0,.25);
+  header{
+    display:flex; align-items:center; gap:14px; padding:14px 20px;
+    border-bottom:1px solid var(--glass-border);
   }
-  .sub{
-    text-align:center; color:var(--teal-soft); font-weight:700; letter-spacing:2px;
-    margin:6px 0 30px; font-size:1.1em;
-  }
-  hr{border:none; border-top:1px solid rgba(255,255,255,.25); margin:20px 0 30px;}
+  header img{height:32px;}
+  header h1{font-size:1.1em; letter-spacing:2px; margin:0; font-weight:700;}
 
-  .countdown-box{
-    max-width:520px; margin:0 auto 40px; background:var(--glass);
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-    border:1px solid var(--glass-border); border-radius:12px; padding:20px; text-align:center;
+  .panels{
+    flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding:14px;
+    min-height:0;
   }
-  .countdown-label{color:var(--teal-soft); letter-spacing:2px; font-size:.85em; font-weight:700; margin-bottom:10px;}
-  .countdown{font-size:2.2em; font-weight:800; color:#ffffff; letter-spacing:2px;}
-
-  .section-label{text-align:center; color:var(--teal-soft); letter-spacing:2px; font-size:.85em; font-weight:700; margin-bottom:4px;}
-  .section-title{text-align:center; font-size:1.6em; font-weight:700; margin:0 0 24px; color:#fff;}
-
-  .podium{display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:36px;}
-  .podium-card{
-    flex:1; min-width:230px; max-width:320px; background:var(--glass);
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-    border:1px solid var(--glass-border); border-radius:12px; padding:18px 20px;
+  .panel{
+    display:flex; flex-direction:column; background:var(--glass);
+    border:1px solid var(--glass-border); border-radius:12px; overflow:hidden;
+    min-height:0;
   }
-  .podium-card.first{border-color:var(--teal-soft); box-shadow:0 0 24px rgba(46,230,197,.25);}
-  .rank-tag{color:var(--teal-soft); font-size:.8em; font-weight:700; letter-spacing:1px;}
-  .podium-name{font-size:1.3em; font-weight:700; margin:8px 0 2px; color:#fff;}
-  .podium-pts{color:var(--muted); font-size:.95em;}
-  .podium-bar-bg{width:100%; height:6px; background:rgba(255,255,255,.15); border-radius:4px; margin-top:10px; overflow:hidden;}
-  .podium-bar-fill{height:100%; background:linear-gradient(90deg,var(--purple),var(--teal-soft));}
-
-  table{width:100%; border-collapse:collapse; background:var(--glass); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-radius:12px; overflow:hidden; border:1px solid var(--glass-border);}
-  thead tr{background:linear-gradient(90deg,var(--purple),var(--blue),var(--teal));}
-  thead th{color:#ffffff; padding:12px 10px; font-size:.82em; letter-spacing:.5px; text-align:center;}
-  thead th:first-child{text-align:left; padding-left:16px;}
-  tbody td{padding:12px 10px; text-align:center; font-size:.92em; border-bottom:1px solid rgba(255,255,255,.1); color:#fff;}
-  tbody td:first-child{text-align:left; padding-left:16px; font-weight:700;}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover{background:rgba(255,255,255,.05);}
-  .pos{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,.15);
-    font-weight:700; margin-right:8px; font-size:.85em;
+  .panel-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; border-bottom:1px solid var(--glass-border);
+    font-size:.85em; font-weight:700; letter-spacing:1px; color:var(--teal-soft);
   }
-  .pos.gold{background:var(--teal-soft); color:#0a2b24;}
-  .progresso{color:var(--teal-soft); font-weight:800;}
-  .badge{padding:2px 10px; border-radius:20px; font-size:.75em; font-weight:700; letter-spacing:.5px;}
-  .badge.sim{background:rgba(62,207,126,.2); color:var(--ok); border:1px solid rgba(62,207,126,.5);}
-  .badge.nao{background:rgba(255,107,107,.15); color:var(--bad); border:1px solid rgba(255,107,107,.4);}
-  .bar-bg{width:90px; height:6px; background:rgba(255,255,255,.15); border-radius:4px; margin:6px auto 0; overflow:hidden;}
-  .bar-fill{height:100%; background:linear-gradient(90deg,var(--purple),var(--teal-soft));}
-  .meta-cell small{display:block; color:var(--muted); font-size:.72em; margin-top:2px;}
+  .panel-header a{color:var(--muted); font-weight:400; font-size:.85em; text-decoration:none;}
+  .panel-header a:hover{color:#fff; text-decoration:underline;}
+  .panel-body{flex:1; min-height:0; position:relative; background:#fff;}
+  .panel-body iframe{width:100%; height:100%; border:0; display:block;}
+  .panel-note{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:20px; color:#666; font-size:.85em; background:#fff;
+  }
 
-  .footer-note{text-align:center; color:var(--muted); font-size:.8em; margin-top:26px;}
-  .status{text-align:center; color:var(--muted); font-size:.75em; margin-top:14px;}
-  .status.err{color:var(--bad);}
+  @media (max-width: 1000px){
+    .panels{grid-template-columns:1fr; grid-auto-rows:minmax(420px, 1fr);}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <h1>LIGA DE VENDAS</h1>
-  <hr>
+  <header>
+    <img src="vylo-logo.png" alt="Vylo Digital">
+    <h1>CENTRAL VYLO DIGITAL</h1>
+  </header>
 
-  <div class="section-title">QUEM ESTÁ NA FRENTE</div>
-  <div class="podium" id="podium"></div>
+  <div class="panels">
 
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Vendedor(a)</th>
-        <th>Decolas<br><small style="font-weight:400">meta 15</small></th>
-        <th>Sellers 10+<br><small style="font-weight:400">meta 5</small></th>
-        <th>Indicações<br><small style="font-weight:400">meta 3</small></th>
-        <th>Progresso</th>
-        <th>Elegível</th>
-      </tr>
-    </thead>
-    <tbody id="ranking-body"></tbody>
-  </table>
+    <div class="panel">
+      <div class="panel-header">
+        <span>🏆 LIGA DE VENDAS</span>
+        <a href="ranking.html" target="_blank">abrir em nova aba ↗</a>
+      </div>
+      <div class="panel-body">
+        <iframe src="ranking.html" title="Liga de Vendas" loading="lazy"></iframe>
+      </div>
+    </div>
 
-  <div class="status" id="status">Carregando dados da planilha...</div>
+    <div class="panel">
+      <div class="panel-header">
+        <span>🗓 CALENDÁRIO EDITORIAL</span>
+        <a href="https://app.notion.com/p/Calend-rios-Editoriais-3aecea585a8e8084bb25e0bdb1d2e72b" target="_blank">abrir em nova aba ↗</a>
+      </div>
+      <div class="panel-body">
+        <iframe src="https://app.notion.com/p/Calend-rios-Editoriais-3aecea585a8e8084bb25e0bdb1d2e72b" title="Calendário Editorial" loading="lazy"></iframe>
+        <div class="panel-note" id="notion-note" style="display:none;">
+          O Notion está bloqueando a exibição aqui dentro (precisa estar logado / compartilhado publicamente).<br>
+          Use "abrir em nova aba" acima.
+        </div>
+      </div>
+    </div>
 
-</div>
+    <div class="panel">
+      <div class="panel-header">
+        <span>📊 BI MERCADO LIVRE</span>
+        <a href="https://app.powerbi.com/view?r=eyJrIjoiOWRiMzA2MjctZjVjMy00NTYxLTg2OTktYmM4NDZhNThiYmI0IiwidCI6IjNlZDU4NGFmLTQ1OTMtNDNlOS04MzIwLTg3Nzg4YTczMDkxYSJ9&disablecdnExpiration=1786486807" target="_blank">abrir em nova aba ↗</a>
+      </div>
+      <div class="panel-body">
+        <iframe src="https://app.powerbi.com/view?r=eyJrIjoiOWRiMzA2MjctZjVjMy00NTYxLTg2OTktYmM4NDZhNThiYmI0IiwidCI6IjNlZDU4NGFmLTQ1OTMtNDNlOS04MzIwLTg3Nzg4YTczMDkxYSJ9&disablecdnExpiration=1786486807" title="BI Mercado Livre" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </div>
 
-<script>
-  // Fonte dos dados: aba "Página1" da planilha Vylo-meta (Google Sheets)
-  const CSV_URL = "https://docs.google.com/spreadsheets/d/1FnNKvyZhNu9tg40fdnePLixxVbvVvvT34yzAFYbhER0/gviz/tq?tqx=out:csv&gid=0";
-  const METAS = { decolas: 15, sellers: 5, indicacoes: 3 };
-  const CAMPAIGN_END = new Date("2026-08-31T23:59:59");
-  const REFRESH_MS = 10000; // recarrega os dados da planilha a cada 10s
+  </div>
 
-  function parseCSV(text){
-    const rows = [];
-    const lines = text.trim().split(/\r?\n/);
-    for (const line of lines){
-      const cells = [];
-      let cur = '', inQuotes = false;
-      for (let i = 0; i < line.length; i++){
-        const ch = line[i];
-        if (ch === '"'){
-          if (inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
-          else inQuotes = !inQuotes;
-        } else if (ch === ',' && !inQuotes){
-          cells.push(cur); cur = '';
-        } else cur += ch;
-      }
-      cells.push(cur);
-      rows.push(cells);
-    }
-    return rows;
-  }
-
-  function progresso(p){
-    const a = Math.min(p.decolas / METAS.decolas, 1);
-    const b = Math.min(p.sellers / METAS.sellers, 1);
-    const c = Math.min(p.indicacoes / METAS.indicacoes, 1);
-    return Math.round(((a + b + c) / 3) * 100);
-  }
-  function elegivel(p){
-    return p.decolas >= METAS.decolas && p.sellers >= METAS.sellers && p.indicacoes >= METAS.indicacoes;
-  }
-
-  function render(players){
-    const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
-    const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
-
-    // Podium
-    const podiumEl = document.getElementById('podium');
-    podiumEl.innerHTML = '';
-    const labels = ["1º LUGAR","2º LUGAR","3º LUGAR"];
-    sorted.slice(0,3).forEach((p,i) => {
-      const div = document.createElement('div');
-      div.className = 'podium-card' + (i===0 ? ' first' : '');
-      div.innerHTML = `
-        <div class="rank-tag">${labels[i]}</div>
-        <div class="podium-name">${p.name}</div>
-        <div class="podium-pts">${p.prog}% das metas concluído</div>
-        <div class="podium-bar-bg"><div class="podium-bar-fill" style="width:${p.prog}%"></div></div>
-      `;
-      podiumEl.appendChild(div);
-    });
-
-    // Table
-    const body = document.getElementById('ranking-body');
-    body.innerHTML = '';
-    sorted.forEach((p, idx) => {
-      const pos = idx + 1;
-      const ok = elegivel(p);
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><span class="pos ${pos===1?'gold':''}">${pos}</span></td>
-        <td>${p.name}</td>
-        <td class="meta-cell">${p.decolas}<small>/${METAS.decolas}</small></td>
-        <td class="meta-cell">${p.sellers}<small>/${METAS.sellers}</small></td>
-        <td class="meta-cell">${p.indicacoes}<small>/${METAS.indicacoes}</small></td>
-        <td>
-          <span class="progresso">${p.prog}%</span>
-          <div class="bar-bg"><div class="bar-fill" style="width:${p.prog}%"></div></div>
-        </td>
-        <td><span class="badge ${ok ? 'sim' : 'nao'}">${ok ? 'SIM' : 'NÃO'}</span></td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  async function loadData(){
-    const statusEl = document.getElementById('status');
-    try {
-      const res = await fetch(CSV_URL + '&_=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      const rows = parseCSV(text).filter(r => r.length > 1 && r[0] !== 'Nome');
-      const players = rows.map(r => ({
-        name: r[0],
-        decolas: Number(r[1]) || 0,
-        sellers: Number(r[2]) || 0,
-        indicacoes: Number(r[3]) || 0,
-      }));
-      if (players.length === 0) throw new Error('planilha vazia');
-      render(players);
-      statusEl.className = 'status';
-      statusEl.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR');
-    } catch (err) {
-      statusEl.className = 'status err';
-      statusEl.textContent = 'Não foi possível carregar os dados da planilha (' + err.message + ')';
-    }
-  }
-
-  loadData();
-  setInterval(loadData, REFRESH_MS);
-</script>
 </body>
 </html>
