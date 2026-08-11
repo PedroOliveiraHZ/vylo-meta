@@ -25,14 +25,21 @@
   header h1{font-size:1.1em; letter-spacing:2px; margin:0; font-weight:700;}
 
   .panels{
-    flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding:14px;
-    min-height:0;
+    flex:1; display:grid; gap:14px; padding:14px; min-height:0;
+    grid-template-columns:1fr 2fr;
+    grid-template-rows:1fr 1fr;
+    grid-template-areas:
+      "ranking bi"
+      "calendar bi";
   }
   .panel{
     display:flex; flex-direction:column; background:var(--glass);
     border:1px solid var(--glass-border); border-radius:12px; overflow:hidden;
     min-height:0;
   }
+  .panel-ranking{grid-area:ranking;}
+  .panel-calendar{grid-area:calendar;}
+  .panel-bi{grid-area:bi;}
   .panel-header{
     display:flex; align-items:center; justify-content:space-between;
     padding:10px 16px; border-bottom:1px solid var(--glass-border);
@@ -48,7 +55,11 @@
   }
 
   @media (max-width: 1000px){
-    .panels{grid-template-columns:1fr; grid-auto-rows:minmax(420px, 1fr);}
+    .panels{
+      grid-template-columns:1fr; grid-template-rows:none;
+      grid-template-areas:"ranking" "calendar" "bi";
+      grid-auto-rows:minmax(420px, 1fr);
+    }
   }
 </style>
 </head>
@@ -61,7 +72,7 @@
 
   <div class="panels">
 
-    <div class="panel">
+    <div class="panel panel-ranking">
       <div class="panel-header">
         <span>🏆 LIGA DE VENDAS</span>
         <a href="ranking.html" target="_blank">abrir em nova aba ↗</a>
@@ -71,21 +82,21 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel panel-calendar">
       <div class="panel-header">
         <span>🗓 CALENDÁRIO EDITORIAL</span>
         <a href="https://app.notion.com/p/Calend-rios-Editoriais-3aecea585a8e8084bb25e0bdb1d2e72b" target="_blank">abrir em nova aba ↗</a>
       </div>
       <div class="panel-body">
-        <iframe src="https://app.notion.com/p/Calend-rios-Editoriais-3aecea585a8e8084bb25e0bdb1d2e72b" title="Calendário Editorial" loading="lazy"></iframe>
-        <div class="panel-note" id="notion-note" style="display:none;">
-          O Notion está bloqueando a exibição aqui dentro (precisa estar logado / compartilhado publicamente).<br>
-          Use "abrir em nova aba" acima.
+        <div class="panel-note">
+          📌 O Notion bloqueia esse link (precisa ser o link público de "Compartilhar na Web", não o link do app).<br><br>
+          Assim que tiver o link público, é só trocar o <code>src</code> do iframe deste painel no <code>index.html</code>.<br><br>
+          Por enquanto, use "abrir em nova aba" acima ↑
         </div>
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel panel-bi">
       <div class="panel-header">
         <span>📊 BI MERCADO LIVRE</span>
         <a href="https://app.powerbi.com/view?r=eyJrIjoiOWRiMzA2MjctZjVjMy00NTYxLTg2OTktYmM4NDZhNThiYmI0IiwidCI6IjNlZDU4NGFmLTQ1OTMtNDNlOS04MzIwLTg3Nzg4YTczMDkxYSJ9&disablecdnExpiration=1786486807" target="_blank">abrir em nova aba ↗</a>
