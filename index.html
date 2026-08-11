@@ -83,7 +83,11 @@
 <body>
 <div class="wrap">
 
-  
+  <h1>LIGA DE VENDAS</h1>
+  <hr>
+
+  <div class="section-title">QUEM ESTÁ NA FRENTE</div>
+  <div class="podium" id="podium"></div>
 
   <table>
     <thead>
@@ -210,21 +214,6 @@
 
   loadData();
   setInterval(loadData, REFRESH_MS);
-
-  // Countdown
-  function tick(){
-    const now = new Date();
-    let diff = CAMPAIGN_END - now;
-    const el = document.getElementById('countdown');
-    if (diff <= 0){ el.textContent = "ENCERRADA"; return; }
-    const d = Math.floor(diff / 86400000); diff -= d*86400000;
-    const h = Math.floor(diff / 3600000); diff -= h*3600000;
-    const m = Math.floor(diff / 60000); diff -= m*60000;
-    const s = Math.floor(diff / 1000);
-    el.innerHTML = `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  }
-  tick();
-  setInterval(tick, 1000);
 </script>
 </body>
 </html>
