@@ -83,19 +83,7 @@
 <body>
 <div class="wrap">
 
-  <img class="logo" src="vylo-logo.png" alt="Vylo Digital">
-  <h1>LIGA DE VENDAS</h1>
-  <div class="sub">SINERGIA COMERCIAL &middot; AGOSTO 2026</div>
-  <hr>
-
-  <div class="countdown-box">
-    <div class="countdown-label">CAMPANHA ENCERRA EM</div>
-    <div class="countdown" id="countdown">--:--:--</div>
-  </div>
-
-  <div class="section-label">CONTROLE DE METAS</div>
-  <div class="section-title">QUEM ESTÁ NA FRENTE</div>
-  <div class="podium" id="podium"></div>
+  
 
   <table>
     <thead>
@@ -121,7 +109,7 @@
   const CSV_URL = "https://docs.google.com/spreadsheets/d/1FnNKvyZhNu9tg40fdnePLixxVbvVvvT34yzAFYbhER0/gviz/tq?tqx=out:csv&gid=0";
   const METAS = { decolas: 15, sellers: 5, indicacoes: 3 };
   const CAMPAIGN_END = new Date("2026-08-31T23:59:59");
-  const REFRESH_MS = 30000; // recarrega os dados da planilha a cada 30s
+  const REFRESH_MS = 10000; // recarrega os dados da planilha a cada 10s
 
   function parseCSV(text){
     const rows = [];
