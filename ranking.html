@@ -52,6 +52,10 @@
     font-weight:700; margin-right:8px; font-size:.85em; color:var(--text);
   }
   .pos.gold{background:var(--teal-soft); color:#fff;}
+  .move{display:inline-block; font-size:.75em; font-weight:700;}
+  .move.up{color:var(--ok);}
+  .move.down{color:var(--bad);}
+  .move.same{color:var(--muted); font-size:.7em;}
   .progresso{color:var(--teal-soft); font-weight:800;}
   .badge{padding:2px 10px; border-radius:20px; font-size:.75em; font-weight:700; letter-spacing:.5px;}
   .badge.sim{background:rgba(30,166,94,.12); color:var(--ok); border:1px solid rgba(30,166,94,.35);}
@@ -123,18 +127,37 @@
     return p.decolas >= METAS.decolas && p.sellers >= METAS.sellers && p.indicacoes >= METAS.indicacoes;
   }
 
+  const PREV_KEY = 'liga_vendas_prev_pos';
+  function loadPrevPositions(){
+    try { return JSON.parse(localStorage.getItem(PREV_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function savePrevPositions(obj){
+    try { localStorage.setItem(PREV_KEY, JSON.stringify(obj)); } catch {}
+  }
+
   function render(players){
     const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
     const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
+    const prevPositions = loadPrevPositions();
 
     const body = document.getElementById('ranking-body');
     body.innerHTML = '';
+    const newPositions = {};
     sorted.forEach((p, idx) => {
       const pos = idx + 1;
+      newPositions[p.name] = pos;
       const ok = elegivel(p);
+      const prevPos = prevPositions[p.name];
+      let moveIcon = '<span class="move same">–</span>';
+      if (prevPos !== undefined && prevPos !== pos){
+        moveIcon = prevPos > pos
+          ? '<span class="move up">▲</span>'
+          : '<span class="move down">▼</span>';
+      }
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><span class="pos ${pos===1?'gold':''}">${pos}</span></td>
+        <td><span class="pos ${pos===1?'gold':''}">${pos}</span>${moveIcon}</td>
         <td>${p.name}</td>
         <td class="meta-cell">${p.decolas}<small>/${METAS.decolas}</small></td>
         <td class="meta-cell">${p.sellers}<small>/${METAS.sellers}</small></td>
@@ -147,6 +170,7 @@
       `;
       body.appendChild(tr);
     });
+    savePrevPositions(newPositions);
   }
 
   async function loadData(){
