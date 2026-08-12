@@ -127,26 +127,40 @@
     return p.decolas >= METAS.decolas && p.sellers >= METAS.sellers && p.indicacoes >= METAS.indicacoes;
   }
 
+  // Guarda a posição de cada um só uma vez por dia (baseline do dia), pra seta
+  // não sumir sozinha no próximo refresh — só reseta quando o dia muda.
   const PREV_KEY = 'liga_vendas_prev_pos';
-  function loadPrevPositions(){
-    try { return JSON.parse(localStorage.getItem(PREV_KEY) || '{}'); }
-    catch { return {}; }
+  function todayLocalISO(){
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
-  function savePrevPositions(obj){
-    try { localStorage.setItem(PREV_KEY, JSON.stringify(obj)); } catch {}
+  function loadBaseline(){
+    try { return JSON.parse(localStorage.getItem(PREV_KEY) || 'null'); }
+    catch { return null; }
+  }
+  function saveBaseline(positions){
+    try { localStorage.setItem(PREV_KEY, JSON.stringify({ date: todayLocalISO(), positions })); } catch {}
   }
 
   function render(players){
     const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
     const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
-    const prevPositions = loadPrevPositions();
+
+    const newPositions = {};
+    sorted.forEach((p, idx) => { newPositions[p.name] = idx + 1; });
+
+    let baseline = loadBaseline();
+    if (!baseline || baseline.date !== todayLocalISO()){
+      // primeiro carregamento do dia: vira a nova referência (sem setas ainda)
+      baseline = { date: todayLocalISO(), positions: newPositions };
+      saveBaseline(newPositions);
+    }
+    const prevPositions = baseline.positions;
 
     const body = document.getElementById('ranking-body');
     body.innerHTML = '';
-    const newPositions = {};
     sorted.forEach((p, idx) => {
       const pos = idx + 1;
-      newPositions[p.name] = pos;
       const ok = elegivel(p);
       const prevPos = prevPositions[p.name];
       let moveIcon = '<span class="move same">–</span>';
@@ -170,7 +184,6 @@
       `;
       body.appendChild(tr);
     });
-    savePrevPositions(newPositions);
   }
 
   async function loadData(){
