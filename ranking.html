@@ -127,42 +127,28 @@
     return p.decolas >= METAS.decolas && p.sellers >= METAS.sellers && p.indicacoes >= METAS.indicacoes;
   }
 
-  // Guarda a posição de cada um só uma vez por dia (baseline do dia), pra seta
-  // não sumir sozinha no próximo refresh — só reseta quando o dia muda.
-  const PREV_KEY = 'liga_vendas_prev_pos';
-  function todayLocalISO(){
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  }
-  function loadBaseline(){
-    try { return JSON.parse(localStorage.getItem(PREV_KEY) || 'null'); }
-    catch { return null; }
-  }
-  function saveBaseline(positions){
-    try { localStorage.setItem(PREV_KEY, JSON.stringify({ date: todayLocalISO(), positions })); } catch {}
-  }
-
   function render(players){
     const withProgress = players.map(p => ({ ...p, prog: progresso(p) }));
     const sorted = [...withProgress].sort((a,b) => b.prog - a.prog);
 
-    const newPositions = {};
-    sorted.forEach((p, idx) => { newPositions[p.name] = idx + 1; });
-
-    let baseline = loadBaseline();
-    if (!baseline || baseline.date !== todayLocalISO()){
-      // primeiro carregamento do dia: vira a nova referência (sem setas ainda)
-      baseline = { date: todayLocalISO(), positions: newPositions };
-      saveBaseline(newPositions);
-    }
-    const prevPositions = baseline.positions;
+    // Posição de base (início do dia) vem da própria planilha (colunas Decolas/Sellers/Indicações Base),
+    // preenchidas 1x por dia por um Apps Script — assim a seta é igual pra todo mundo que abrir o painel.
+    const withBaseProg = players.map(p => ({
+      ...p,
+      baseProg: progresso({ decolas: p.baseDecolas, sellers: p.baseSellers, indicacoes: p.baseIndicacoes }),
+    }));
+    const baseSorted = [...withBaseProg].sort((a,b) => b.baseProg - a.baseProg);
+    const prevPositions = {};
+    baseSorted.forEach((p, idx) => { prevPositions[p.name] = idx + 1; });
+    // Se a planilha ainda não tem as colunas de base preenchidas (tudo 0), não mostra seta nenhuma.
+    const hasBaseData = players.some(p => p.baseDecolas || p.baseSellers || p.baseIndicacoes);
 
     const body = document.getElementById('ranking-body');
     body.innerHTML = '';
     sorted.forEach((p, idx) => {
       const pos = idx + 1;
       const ok = elegivel(p);
-      const prevPos = prevPositions[p.name];
+      const prevPos = hasBaseData ? prevPositions[p.name] : undefined;
       let moveIcon = '<span class="move same">–</span>';
       if (prevPos !== undefined && prevPos !== pos){
         moveIcon = prevPos > pos
@@ -198,6 +184,10 @@
         decolas: Number(r[1]) || 0,
         sellers: Number(r[2]) || 0,
         indicacoes: Number(r[3]) || 0,
+        // Colunas G, H, I = base do dia (preenchidas 1x/dia pelo Apps Script)
+        baseDecolas: Number(r[6]) || 0,
+        baseSellers: Number(r[7]) || 0,
+        baseIndicacoes: Number(r[8]) || 0,
       }));
       if (players.length === 0) throw new Error('planilha vazia');
       render(players);
