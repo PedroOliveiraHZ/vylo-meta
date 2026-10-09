@@ -118,9 +118,9 @@
   }
 
   function progresso(p){
-    const a = Math.min(p.decolas / METAS.decolas, 1);
-    const b = Math.min(p.sellers / METAS.sellers, 1);
-    const c = Math.min(p.indicacoes / METAS.indicacoes, 1);
+    const a = p.decolas / METAS.decolas;
+    const b = p.sellers / METAS.sellers;
+    const c = p.indicacoes / METAS.indicacoes;
     return Math.round(((a + b + c) / 3) * 100);
   }
   function elegivel(p){
@@ -164,7 +164,7 @@
         <td class="meta-cell">${p.indicacoes}<small>/${METAS.indicacoes}</small></td>
         <td>
           <span class="progresso">${p.prog}%</span>
-          <div class="bar-bg"><div class="bar-fill" style="width:${p.prog}%"></div></div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(p.prog, 100)}%"></div></div>
         </td>
         <td><span class="badge ${ok ? 'sim' : 'nao'}">${ok ? 'SIM' : 'NÃO'}</span></td>
       `;
